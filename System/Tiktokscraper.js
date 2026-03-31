@@ -17,7 +17,7 @@ export const Tiktok = async(query) => {
     data: new URLSearchParams(Object.entries({ query })),
   });
 
-  result = {};
+  const result = {};
 
   result.creator = "YNTKTS";
   result.title = clean(response.data.desc);

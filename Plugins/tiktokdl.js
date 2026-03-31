@@ -1,3 +1,5 @@
+import { Tiktok } from "../System/Tiktokscraper.js";
+
 let mergedCommands = [
   "tiktok",
   "tiktokdl",
@@ -20,14 +22,12 @@ export default {
       prefix,
       doReact,
       args,
-      isMedia,
-      quoted,
     }
   ) => {
     if (!text) {
       await doReact("❌");
       return m.reply(
-        `Please provide a Toktok video link !\n\nExample: ${prefix}say Atlas MD is OP`
+        `Please provide a Tiktok video link !\n\nExample: ${prefix}tiktok <link>`
       );
     }
     if (!text.includes("tiktok")) {
@@ -37,29 +37,11 @@ export default {
 
     switch (inputCMD) {
       case "tiktok":
-      case "tiktokdl":
+      case "tiktokdl": {
         await doReact("📥");
-        let buttons = [
-          {
-            buttonId: `${prefix}tiktokmp3 ${args[0]}`,
-            buttonText: { displayText: "♬ Audio" },
-            type: 1,
-          },
-          {
-            buttonId: `${prefix}tiktokmp4 ${args[0]}`,
-            buttonText: { displayText: "▶ Video" },
-            type: 1,
-          },
-          {
-            buttonId: `${prefix}tiktokdoc ${args[0]}`,
-            buttonText: { displayText: "∎ Document" },
-            type: 1,
-          },
-        ];
-
-        txtmain = `
+        const txtmain = `
           *『 Tiktok Downloader 』*
-    
+
 *🧩 Video Url :* _${text}_\n\n
 *📌 Select the format*
 *${prefix}tiktokmp3 <link>*
@@ -71,60 +53,63 @@ export default {
           { image: { url: botImage1 }, caption: txtmain },
           { quoted: m }
         );
-
         break;
+      }
 
-      case "tiktokmp3":
+      case "tiktokmp3": {
         await doReact("📥");
-
-        import "../System/Tiktokscraper.js";
-          .Tiktok(args[0])
-          .then((data) => {
-            Atlas.sendMessage(
-              m.from,
-              { audio: { url: data.audio }, mimetype: "audio/mpeg" },
-              { quoted: m }
-            );
-          });
-
+        try {
+          const data = await Tiktok(args[0]);
+          Atlas.sendMessage(
+            m.from,
+            { audio: { url: data.audio }, mimetype: "audio/mpeg" },
+            { quoted: m }
+          );
+        } catch (e) {
+          await doReact("❌");
+          m.reply(`Failed to download TikTok audio: ${e.message}`);
+        }
         break;
+      }
 
-      case "tiktokmp4":
+      case "tiktokmp4": {
         await doReact("📥");
-
-        import "../System/Tiktokscraper.js";
-          .Tiktok(args[0])
-          .then((data) => {
-            Atlas.sendMessage(
-              m.from,
-              {
-                video: { url: data.watermark },
-                caption: `Downloaded by: *${botName}*`,
-              },
-              { quoted: m }
-            );
-          });
-
+        try {
+          const data = await Tiktok(args[0]);
+          Atlas.sendMessage(
+            m.from,
+            {
+              video: { url: data.watermark },
+              caption: `Downloaded by: *${botName}*`,
+            },
+            { quoted: m }
+          );
+        } catch (e) {
+          await doReact("❌");
+          m.reply(`Failed to download TikTok video: ${e.message}`);
+        }
         break;
+      }
 
-      case "tiktokdoc":
+      case "tiktokdoc": {
         await doReact("📥");
-
-        import "../System/Tiktokscraper.js";
-          .Tiktok(args[0])
-          .then((data) => {
-            Atlas.sendMessage(
-              m.from,
-              {
-                document: { url: data.audio },
-                mimetype: "audio/mpeg",
-                fileName: `Downloaded by ${botName}.mp3`,
-              },
-              { quoted: m }
-            );
-          });
-
+        try {
+          const data = await Tiktok(args[0]);
+          Atlas.sendMessage(
+            m.from,
+            {
+              document: { url: data.audio },
+              mimetype: "audio/mpeg",
+              fileName: `Downloaded by ${botName}.mp3`,
+            },
+            { quoted: m }
+          );
+        } catch (e) {
+          await doReact("❌");
+          m.reply(`Failed to download TikTok document: ${e.message}`);
+        }
         break;
+      }
 
       default:
         break;

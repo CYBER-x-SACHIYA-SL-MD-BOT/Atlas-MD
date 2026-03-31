@@ -37,7 +37,7 @@ export default {
     switch (inputCMD) {
       case "exec":
       case "run":
-        isUsermod = await checkMod(m.sender);
+        const isUsermod = await checkMod(m.sender);
         if (!isCreator && !isintegrated && !isUsermod) {
           await doReact("❌");
           return m.reply(
@@ -53,7 +53,7 @@ export default {
         await doReact("🔰");
         try {
           const result = eval(text);
-          out = JSON.stringify(result, null, "\t") || "Evaluated JavaScript";
+          const out = JSON.stringify(result, null, "\t") || "Evaluated JavaScript";
         } catch (e) {
           m.reply(`Error: ${e.message}`);
         }
@@ -73,15 +73,15 @@ export default {
         // }
         await doReact("🔰");
         try {
-          target = text;
+          let target = text;
           if (text.split(" ")[0] != "--txt") {
             if (!text.includes("http") && !text.includes("https")) {
               target = "http://" + text;
             }
-            var parsedUrl = url.parse(target);
-            var hostname = parsedUrl.hostname;
-            var path = parsedUrl.pathname;
-            var options = {
+            const parsedUrl = url.parse(target);
+            const hostname = parsedUrl.hostname;
+            const path = parsedUrl.pathname;
+            const options = {
               hostname: hostname,
               path: path,
               method: "GET",
@@ -130,14 +130,14 @@ export default {
 
             req.end();
           } else {
-            var target = text.replace("--txt ", "");
+            let target = text.replace("--txt ", "");
             if (!target.includes("http") && !target.includes("https")) {
               target = "http://" + target;
             }
-            var parsedUrl = url.parse(target);
-            var hostname = parsedUrl.hostname;
-            var path = parsedUrl.pathname;
-            var options = {
+            const parsedUrl = url.parse(target);
+            const hostname = parsedUrl.hostname;
+            const path = parsedUrl.pathname;
+            const options = {
               hostname: hostname,
               path: path,
               method: "GET",

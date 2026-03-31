@@ -34,18 +34,18 @@ export default {
           );
         }
         await doReact("📥");
-        thumbAtlas = "https://graph.org/file/d0a287fa875c809f234ce.jpg";
-        songInfo = await yts(text);
-        song = songInfo.videos[0];
-        videoUrl = song.url;
-        videoId = videoUrl.split("v=")[1];
+        const thumbAtlas = "https://graph.org/file/d0a287fa875c809f234ce.jpg";
+        const songInfo = await yts(text);
+        const song = songInfo.videos[0];
+        const videoUrl = song.url;
+        const videoId = videoUrl.split("v=")[1];
 
         await Atlas.sendMessage(
           m.from,
           {
             image: { url: song.thumbnail },
             caption: `\nDownloading: *${song.title}*
-            
+
 _🕛 Duration:_ *${song.timestamp}*
 
 _🎀 Channel Name:_ *${song.author.name}*
@@ -55,34 +55,38 @@ _🏮 Video Uploaded:_ *${song.ago}*\n`,
           { quoted: m }
         );
 
-        YT.mp3(videoId).then((file) => {
-          const inputPath = file.path;
-          const outputPath = inputPath + ".opus";
+        YT.mp3(videoId)
+          .then((file) => {
+            const inputPath = file.path;
+            const outputPath = inputPath + ".opus";
 
-          ffmpeg(inputPath)
-            .format("opus")
-            .on("error", (err) => {
-              console.error("Error converting to opus:", err);
-            })
-            .on("end", async () => {
-              await Atlas.sendPresenceUpdate("recording", m.from);
+            ffmpeg(inputPath)
+              .format("opus")
+              .on("error", (err) => {
+                console.error("Error converting to opus:", err);
+              })
+              .on("end", async () => {
+                await Atlas.sendPresenceUpdate("recording", m.from);
 
-              Atlas.sendMessage(
-                m.from,
-                {
-                  audio: fs.readFileSync(outputPath),
-                  mimetype: "audio/mpeg",
-                  ptt: true,
-                },
-                { quoted: m }
-              );
+                Atlas.sendMessage(
+                  m.from,
+                  {
+                    audio: fs.readFileSync(outputPath),
+                    mimetype: "audio/mpeg",
+                    ptt: true,
+                  },
+                  { quoted: m }
+                );
 
-              fs.unlinkSync(inputPath);
-              fs.unlinkSync(outputPath);
-            })
-
-            .save(outputPath);
-        });
+                fs.unlinkSync(inputPath);
+                fs.unlinkSync(outputPath);
+              })
+              .save(outputPath);
+          })
+          .catch((err) => {
+            console.error("[ ATLAS ] YT mp3 download error:", err.message);
+            m.reply(`Failed to download audio: ${err.message}`);
+          });
 
         break;
 
@@ -100,57 +104,60 @@ _🏮 Video Uploaded:_ *${song.ago}*\n`,
           );
         }
         await doReact("📥");
-        songInfo = await yts(text);
-        song = songInfo.videos[0];
-        videoUrl = song.url;
-        videoId = videoUrl.split("v=")[1];
-        thumbAtlas = "https://graph.org/file/d0a287fa875c809f234ce.jpg";
+        {
+          const songInfo2 = await yts(text);
+          const song2 = songInfo2.videos[0];
+          const videoUrl2 = song2.url;
+          const videoId2 = videoUrl2.split("v=")[1];
 
-        await Atlas.sendMessage(
-          m.from,
-          {
-            image: { url: song.thumbnail },
-            caption: `\nDownloading: *${song.title}*
-            
-_🕛 Duration:_ *${song.timestamp}*
+          await Atlas.sendMessage(
+            m.from,
+            {
+              image: { url: song2.thumbnail },
+              caption: `\nDownloading: *${song2.title}*
 
-_🎀 Channel Name:_ *${song.author.name}*
+_🕛 Duration:_ *${song2.timestamp}*
 
-_🏮 Video Uploaded:_ *${song.ago}*\n`,
-          },
-          { quoted: m }
-        );
+_🎀 Channel Name:_ *${song2.author.name}*
 
-        YT.mp3(videoId).then((file) => {
-          const inputPath = file.path;
-          const outputPath = inputPath + ".opus";
+_🏮 Video Uploaded:_ *${song2.ago}*\n`,
+            },
+            { quoted: m }
+          );
 
-          ffmpeg(inputPath)
-            .format("opus")
-            .on("error", (err) => {
-              console.error("Error converting to opus:", err);
+          YT.mp3(videoId2)
+            .then((file) => {
+              const inputPath = file.path;
+              const outputPath = inputPath + ".opus";
+
+              ffmpeg(inputPath)
+                .format("opus")
+                .on("error", (err) => {
+                  console.error("Error converting to opus:", err);
+                })
+                .on("end", async () => {
+                  await Atlas.sendPresenceUpdate("recording", m.from);
+
+                  Atlas.sendMessage(
+                    m.from,
+                    {
+                      audio: fs.readFileSync(inputPath),
+                      mimetype: "audio/mpeg",
+                      ptt: true,
+                    },
+                    { quoted: m }
+                  );
+
+                  fs.unlinkSync(inputPath);
+                  fs.unlinkSync(outputPath);
+                })
+                .save(outputPath);
             })
-            .on("end", async () => {
-              const thumbnailBuffer = await getBuffer(thumbAtlas);
-
-              await Atlas.sendPresenceUpdate("recording", m.from);
-
-              Atlas.sendMessage(
-                m.from,
-                {
-                  audio: fs.readFileSync(inputPath),
-                  mimetype: "audio/mpeg",
-                  ptt: true,
-                },
-                { quoted: m }
-              );
-
-              fs.unlinkSync(inputPath);
-              fs.unlinkSync(outputPath);
-            })
-
-            .save(outputPath);
-        });
+            .catch((err) => {
+              console.error("[ ATLAS ] YT mp3 download error:", err.message);
+              m.reply(`Failed to download audio: ${err.message}`);
+            });
+        }
 
         break;
 
@@ -168,36 +175,36 @@ _🏮 Video Uploaded:_ *${song.ago}*\n`,
           );
         }
         await doReact("📥");
-        songInfo = await yts(text);
-        song = songInfo.videos[0];
-        videoUrl = song.url;
-        videoId = videoUrl.split("v=")[1];
-        result = await yts(videoId);
+        {
+          const songInfo3 = await yts(text);
+          const song3 = songInfo3.videos[0];
+          const videoUrl3 = song3.url;
 
-        await Atlas.sendMessage(
-          m.from,
-          {
-            image: { url: song.thumbnail },
-            caption: `\nDownloading: *${song.title}*
-            
-_🕛 Duration:_ *${song.timestamp}*
+          await Atlas.sendMessage(
+            m.from,
+            {
+              image: { url: song3.thumbnail },
+              caption: `\nDownloading: *${song3.title}*
 
-_🎀 Channel Name:_ *${song.author.name}*
+_🕛 Duration:_ *${song3.timestamp}*
 
-_🏮 Video Uploaded:_ *${song.ago}*\n`,
-          },
-          { quoted: m }
-        );
+_🎀 Channel Name:_ *${song3.author.name}*
 
-        const ytaud3 = await YT.mp4(videoUrl);
-        Atlas.sendMessage(
-          m.from,
-          {
-            video: { url: ytaud3.videoUrl },
-            caption: `${song.title} By: *${botName}*`,
-          },
-          { quoted: m }
-        );
+_🏮 Video Uploaded:_ *${song3.ago}*\n`,
+            },
+            { quoted: m }
+          );
+
+          const ytaud3 = await YT.mp4(videoUrl3);
+          Atlas.sendMessage(
+            m.from,
+            {
+              video: { url: ytaud3.videoUrl },
+              caption: `${song3.title} By: *${botName}*`,
+            },
+            { quoted: m }
+          );
+        }
 
         break;
 
@@ -209,36 +216,36 @@ _🏮 Video Uploaded:_ *${song.ago}*\n`,
           );
         }
         await doReact("📥");
+        {
+          const songInfo4 = await yts(text);
+          const song4 = songInfo4.videos[0];
+          const videoUrl4 = song4.url;
 
-        songInfo = await yts(text);
-        song = songInfo.videos[0];
-        videoUrl = song.url;
-        videoId = videoUrl.split("v=")[1];
+          await Atlas.sendMessage(
+            m.from,
+            {
+              image: { url: song4.thumbnail },
+              caption: `\nDownloading: *${song4.title}*
 
-        await Atlas.sendMessage(
-          m.from,
-          {
-            image: { url: song.thumbnail },
-            caption: `\nDownloading: *${song.title}*
-            
-_🕛 Duration:_ *${song.timestamp}*
+_🕛 Duration:_ *${song4.timestamp}*
 
-_🎀 Channel Name:_ *${song.author.name}*
+_🎀 Channel Name:_ *${song4.author.name}*
 
-_🏮 Video Uploaded:_ *${song.ago}*\n`,
-          },
-          { quoted: m }
-        );
+_🏮 Video Uploaded:_ *${song4.ago}*\n`,
+            },
+            { quoted: m }
+          );
 
-        const ytaud2 = await YT.mp4(videoUrl);
-        Atlas.sendMessage(
-          m.from,
-          {
-            video: { url: ytaud2.videoUrl },
-            caption: `${song.title} By: *${botName}*`,
-          },
-          { quoted: m }
-        );
+          const ytaud2 = await YT.mp4(videoUrl4);
+          Atlas.sendMessage(
+            m.from,
+            {
+              video: { url: ytaud2.videoUrl },
+              caption: `${song4.title} By: *${botName}*`,
+            },
+            { quoted: m }
+          );
+        }
 
         break;
 
@@ -249,26 +256,28 @@ _🏮 Video Uploaded:_ *${song.ago}*\n`,
           return m.reply(`Please provide a search term!`);
         }
         await doReact("📥");
-        let search = await yts(text);
-        let thumbnail = search.all[0].thumbnail;
-        let num = 1;
+        {
+          const search = await yts(text);
+          const thumbnail = search.all[0].thumbnail;
+          let num = 1;
 
-        var txt = `*🏮 YouTube Search Engine 🏮*\n\n_🧩 Search Term:_ *${args.join(
-          " "
-        )}*\n\n*📌 Total Results:* *${search.all.length}*\n`;
+          let txt = `*🏮 YouTube Search Engine 🏮*\n\n_🧩 Search Term:_ *${args.join(
+            " "
+          )}*\n\n*📌 Total Results:* *${search.all.length}*\n`;
 
-        for (let i of search.all) {
-          txt += `\n_Result:_ *${num++}*\n_🎀 Title:_ *${
-            i.title
-          }*\n_🔶 Duration:_ *${i.timestamp}*\n_🔷 Link:_ ${i.url}\n\n`;
+          for (let i of search.all) {
+            txt += `\n_Result:_ *${num++}*\n_🎀 Title:_ *${
+              i.title
+            }*\n_🔶 Duration:_ *${i.timestamp}*\n_🔷 Link:_ ${i.url}\n\n`;
+          }
+
+          const buttonMessage = {
+            image: { url: thumbnail },
+            caption: txt,
+          };
+
+          Atlas.sendMessage(m.from, buttonMessage, { quoted: m });
         }
-
-        let buttonMessage = {
-          image: { url: thumbnail },
-          caption: txt,
-        };
-
-        Atlas.sendMessage(m.from, buttonMessage, { quoted: m });
         break;
 
       default:

@@ -78,7 +78,7 @@ export default {
       case "tomp4":
         if (!m.quoted && !/webp/.test(mime)) {
           await doReact("❔");
-          return reply(
+          return m.reply(
             `Please reply to an *Animated* sticker to convert it to video !`
           );
         }
@@ -130,7 +130,7 @@ export default {
         }
         if (!/video/.test(mime) && !/audio/.test(mime)) {
           await doReact("❌");
-          return reply(
+          return m.reply(
             `Send/Reply Video/Audio You Want To Convert Into MP3 With Caption *${prefix}tomp3*`
           );
         }
@@ -205,7 +205,7 @@ export default {
             m.reply(`*Generated Video URL:* \n\n${util.format(anu)}\n`);
           } catch (e) {
             await doReact("❌");
-            await fs.unlinkSync(media5);
+            fs.unlinkSync(media5);
             return Atlas.sendMessage(
               m.from,
               {
@@ -256,10 +256,9 @@ export default {
             )}.pdf`;
             const pdfPATH = randomFileName;
             await generatePDF(pdfPATH);
-            pdf = fs.readFileSync(pdfPATH);
 
             setTimeout(async () => {
-              let pdf = fs.readFileSync(pdfPATH);
+              const pdf = fs.readFileSync(pdfPATH);
 
               Atlas.sendMessage(
                 m.from,

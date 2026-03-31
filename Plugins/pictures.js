@@ -52,8 +52,8 @@ export default {
         }
         await doReact("🎴");
         gis(text, async (error, result) => {
-          n = result;
-          let images = n[Math.floor(Math.random() * n.length)].url;
+          const n = result;
+          const images = n[Math.floor(Math.random() * n.length)].url;
           let resText = `\n_🎀 Image Search Term:_ *${text}*\n\n_🧩 Powered by_ *${botName}*\n`;
           /*
           let buttons = [
@@ -108,28 +108,19 @@ export default {
           
         }
         await doReact("📍");
-        hxzapi
-          .pinterest(text)
-          .then(async (res) => {
-            imgnyee = res[Math.floor(Math.random() * res.length)];
-            /*let buttons = [
-          {
-            buttonId: `${prefix}pinterest ${args.join(" ")}`,
-            buttonText: { displayText: ">>" },
-            type: 1,
-          },
-        ];*/
-            let txt = `\n_🎀 Pinterest Search Term:_ *${text}*\n\n_🧩 Powered by_ *${botName}*\n`;
-            let buttonMessage = {
-              image: { url: imgnyee },
-              caption: txt,
-              //footer: `*${botName}*`,
-              //buttons: buttons,
-              //headerType: 4,
-            };
-            Atlas.sendMessage(m.from, buttonMessage, { quoted: m });
-          })
-          .catch((_) => _);
+        try {
+          const res = await hxzapi.pinterest(text);
+          const imgnyee = res[Math.floor(Math.random() * res.length)];
+          const txt = `\n_🎀 Pinterest Search Term:_ *${text}*\n\n_🧩 Powered by_ *${botName}*\n`;
+          const buttonMessage = {
+            image: { url: imgnyee },
+            caption: txt,
+          };
+          Atlas.sendMessage(m.from, buttonMessage, { quoted: m });
+        } catch (e) {
+          await doReact("❌");
+          m.reply(`Pinterest search failed: ${e.message}`);
+        }
 
         break;
 

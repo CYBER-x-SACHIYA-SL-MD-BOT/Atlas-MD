@@ -172,7 +172,7 @@ export default {
 
         }
         await doReact("🌤");
-        var myweather = await axios.get(
+        const myweather = await axios.get(
           `https://api.openweathermap.org/data/2.5/weather?q=${text}&units=metric&appid=e409825a497a0c894d2dd975542234b0&language=tr`
         );
 
@@ -233,13 +233,15 @@ export default {
           );
         }
         await doReact("📊");
-        var GHuserInfo = await axios
-          .get(`https://api.github.com/users/${text}`)
-          .then((response) => response.data)
-          .catch((error) => {
-            console.log(error);
-          });
-        let GhUserPP = GHuserInfo.avatar_url;
+        let GHuserInfo;
+        try {
+          const ghRes = await axios.get(`https://api.github.com/users/${text}`);
+          GHuserInfo = ghRes.data;
+        } catch (error) {
+          await doReact("❌");
+          return m.reply(`GitHub user not found or API error: ${error.message}`);
+        }
+        const GhUserPP = GHuserInfo.avatar_url;
         let resText4 = `        *🏮 GitHub User Info 🏮*\n\n_🎀 Username:_ *${GHuserInfo.login}*\n_🧩 Name:_ *${GHuserInfo.name}*\n\n_🧣 Bio:_ *${GHuserInfo.bio}*\n\n_🍁 Total Followers:_ *${GHuserInfo.followers}*\n_🔖 Total Public Repos:_ *${GHuserInfo.public_repos}*\n_📌 Website:_ ${GHuserInfo.blog}\n`;
 
         Atlas.sendMessage(

@@ -1,4 +1,5 @@
 import axios from "axios";
+import * as cheerio from "cheerio";
 let mergedCommands = [
   "igdl",
   "instadl",
@@ -167,7 +168,7 @@ async function mediafireDl(url) {
     .replace("                         ", "");
   const seplit = link.split("/");
   const res5 = seplit[5];
-  resdl = res5.split(".");
+  let resdl = res5.split(".");
   resdl = resdl[1];
   results.push({ res5, resdl, size, link });
   return results;

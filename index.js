@@ -103,7 +103,11 @@ commands.prefix = global.prefa;
 import mongoose from "mongoose";
 import qrcode from "qrcode";
 import qrcodeTerminal from "qrcode-terminal";
-import { getPluginURLs, checkAntidelete, checkMod } from "./System/MongoDB/MongoDb_Core.js";
+import {
+  getPluginURLs,
+  checkAntidelete,
+  checkMod,
+} from "./System/MongoDB/MongoDb_Core.js";
 import chalk from "chalk";
 
 app.use(express.json());
@@ -243,6 +247,10 @@ const startAtlas = async () => {
     browser: ["Ubuntu", "Chrome", "20.0.04"],
     auth: state,
     version,
+    // Send a WebSocket ping every 25 s so the server never silently drops
+    // an idle connection. If the pong does not come back Baileys fires the
+    // normal "connection.update" → "close" event, which restarts the bot.
+    keepAliveIntervalMs: 25_000,
   });
 
   AtlasSocket = Atlas; // expose for pairing API
@@ -324,7 +332,9 @@ const startAtlas = async () => {
     if (connection === "close") {
       let reason = new Boom(lastDisconnect?.error)?.output.statusCode;
       if (reason === DisconnectReason.badSession) {
-        console.log(`[ ATLAS ] Bad session detected — clearing and restarting for fresh QR scan...\n`);
+        console.log(
+          `[ ATLAS ] Bad session detected — clearing and restarting for fresh QR scan...\n`,
+        );
         await clearState();
         startAtlas();
       } else if (reason === DisconnectReason.connectionClosed) {
@@ -339,7 +349,9 @@ const startAtlas = async () => {
         );
         process.exit();
       } else if (reason === DisconnectReason.loggedOut) {
-        console.log(`[ ATLAS ] Device logged out — clearing session and restarting for fresh QR scan...\n`);
+        console.log(
+          `[ ATLAS ] Device logged out — clearing session and restarting for fresh QR scan...\n`,
+        );
         await clearState();
         startAtlas();
       } else if (reason === DisconnectReason.restartRequired) {
@@ -404,11 +416,23 @@ const startAtlas = async () => {
 
         const deleter = key.participant || key.remoteJid;
 
-        const { extractMessageContent, getContentType, downloadContentFromMessage, jidNormalizedUser } = await import("@whiskeysockets/baileys");
+        const {
+          extractMessageContent,
+          getContentType,
+          downloadContentFromMessage,
+          jidNormalizedUser,
+        } = await import("@whiskeysockets/baileys");
 
         // Skip if the original message was sent by the bot itself
         const botJid = Atlas.user?.id ? jidNormalizedUser(Atlas.user.id) : null;
-        if (cached.key?.fromMe || (botJid && jidNormalizedUser(cached.key?.participant || cached.key?.remoteJid) === botJid)) continue;
+        if (
+          cached.key?.fromMe ||
+          (botJid &&
+            jidNormalizedUser(
+              cached.key?.participant || cached.key?.remoteJid,
+            ) === botJid)
+        )
+          continue;
 
         // Skip if the deleter is a group admin
         try {
@@ -425,11 +449,16 @@ const startAtlas = async () => {
 
         // Skip if the deleter is an owner
         const deleterDigits = deleter.replace(/[^0-9]/g, "");
-        const ownerDigits = (global.owner || []).map((o) => o.replace(/[^0-9]/g, ""));
+        const ownerDigits = (global.owner || []).map((o) =>
+          o.replace(/[^0-9]/g, ""),
+        );
         if (ownerDigits.includes(deleterDigits)) continue;
 
         // Skip if the deleter is an integrated developer
-        const integratedJids = ["918101187835@s.whatsapp.net", "923045204414@s.whatsapp.net"];
+        const integratedJids = [
+          "918101187835@s.whatsapp.net",
+          "923045204414@s.whatsapp.net",
+        ];
         if (integratedJids.includes(jidNormalizedUser(deleter))) continue;
 
         const senderTag = `@${deleter.split("@")[0]}`;
@@ -443,8 +472,14 @@ const startAtlas = async () => {
         const content = extracted[contentType];
 
         // Text messages
-        if (contentType === "conversation" || contentType === "extendedTextMessage") {
-          const text = contentType === "conversation" ? extracted.conversation : content?.text || "";
+        if (
+          contentType === "conversation" ||
+          contentType === "extendedTextMessage"
+        ) {
+          const text =
+            contentType === "conversation"
+              ? extracted.conversation
+              : content?.text || "";
           await Atlas.sendMessage(groupId, {
             text: `🛡️ *Anti-Delete*\n\n${senderTag} deleted:\n\n${text}`,
             mentions: [deleter],
@@ -460,26 +495,54 @@ const startAtlas = async () => {
         const isDoc = contentType === "documentMessage";
 
         if (isImage || isVideo || isAudio || isSticker || isDoc) {
-          const mediaType = isImage ? "image" : isVideo ? "video" : isAudio ? "audio" : isSticker ? "sticker" : "document";
+          const mediaType = isImage
+            ? "image"
+            : isVideo
+              ? "video"
+              : isAudio
+                ? "audio"
+                : isSticker
+                  ? "sticker"
+                  : "document";
           const stream = await downloadContentFromMessage(content, mediaType);
           let buffer = Buffer.from([]);
           for await (const chunk of stream) {
             buffer = Buffer.concat([buffer, chunk]);
           }
 
-          const caption = `🛡️ *Anti-Delete*\n\n${senderTag} deleted this ${mediaType}` +
+          const caption =
+            `🛡️ *Anti-Delete*\n\n${senderTag} deleted this ${mediaType}` +
             (content.caption ? `:\n\n${content.caption}` : "");
 
           if (isImage) {
-            await Atlas.sendMessage(groupId, { image: buffer, caption, mentions: [deleter] });
+            await Atlas.sendMessage(groupId, {
+              image: buffer,
+              caption,
+              mentions: [deleter],
+            });
           } else if (isVideo) {
-            await Atlas.sendMessage(groupId, { video: buffer, caption, mentions: [deleter] });
+            await Atlas.sendMessage(groupId, {
+              video: buffer,
+              caption,
+              mentions: [deleter],
+            });
           } else if (isAudio) {
-            await Atlas.sendMessage(groupId, { audio: buffer, mimetype: content.mimetype || "audio/ogg; codecs=opus", caption: undefined, mentions: [deleter] });
-            await Atlas.sendMessage(groupId, { text: `🛡️ *Anti-Delete*\n\n${senderTag} deleted an audio message`, mentions: [deleter] });
+            await Atlas.sendMessage(groupId, {
+              audio: buffer,
+              mimetype: content.mimetype || "audio/ogg; codecs=opus",
+              caption: undefined,
+              mentions: [deleter],
+            });
+            await Atlas.sendMessage(groupId, {
+              text: `🛡️ *Anti-Delete*\n\n${senderTag} deleted an audio message`,
+              mentions: [deleter],
+            });
           } else if (isSticker) {
             await Atlas.sendMessage(groupId, { sticker: buffer });
-            await Atlas.sendMessage(groupId, { text: `🛡️ *Anti-Delete*\n\n${senderTag} deleted a sticker`, mentions: [deleter] });
+            await Atlas.sendMessage(groupId, {
+              text: `🛡️ *Anti-Delete*\n\n${senderTag} deleted a sticker`,
+              mentions: [deleter],
+            });
           } else if (isDoc) {
             await Atlas.sendMessage(groupId, {
               document: buffer,
@@ -779,6 +842,21 @@ const runPeriodicSync = async () => {
   }
 };
 
+const runWatchdog = () => {
+  if (!AtlasSocket) return;
+  // WebSocket readyState: 0=CONNECTING 1=OPEN 2=CLOSING 3=CLOSED
+  const wsReady = AtlasSocket.ws?.readyState;
+  if (wsReady !== undefined && wsReady !== 1 && status === "open") {
+    console.log(
+      chalk.yellow(
+        `[ ATLAS ] Session Watchdog: silent disconnect detected (wsState=${wsReady}) — reconnecting...`,
+      ),
+    );
+    status = "reconnecting";
+    startAtlas();
+  }
+};
+
 if (typeof global.gc === "function") {
   setInterval(
     async () => {
@@ -789,6 +867,7 @@ if (typeof global.gc === "function") {
         ),
       );
       await runPeriodicSync();
+      runWatchdog();
     },
     GC_INTERVAL_MINUTES * 60 * 1000,
   );
@@ -801,8 +880,14 @@ if (typeof global.gc === "function") {
   console.warn(
     "[ ATLAS ] GC not available. Start the bot with 'npm start' to enable garbage collection.",
   );
-  // Still run session sync even without GC
-  setInterval(runPeriodicSync, GC_INTERVAL_MINUTES * 60 * 1000);
+  // Still run session sync and watchdog even without GC
+  setInterval(
+    () => {
+      runPeriodicSync();
+      runWatchdog();
+    },
+    GC_INTERVAL_MINUTES * 60 * 1000,
+  );
 }
 
 app.use("/", express.static(join(__dirname, "Frontend")));

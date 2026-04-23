@@ -26,7 +26,7 @@ global.pickKey = (keys) => {
 
 let gg = process.env.MODS;
 if (!gg) {
-  gg = "918101187835"; // You can replace this number with yours //
+  gg = "94760220052"; // You can replace this number with yours //
 }
 
 global.owner = gg.split(",");
